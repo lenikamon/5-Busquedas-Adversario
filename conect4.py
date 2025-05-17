@@ -104,7 +104,7 @@ def ordena_centro(jugadas, jugador):
     """
     return sorted(jugadas, key=lambda x: abs(x - 4))
 
-def evalua_3con(s):
+def evalua_3con(s):               
     """
     Evalua el estado s para el jugador 1
     """
@@ -146,8 +146,34 @@ def evalua_3con(s):
         print("ERROR, evaluación fuera de rango --> ", promedio)
     return promedio
 
+## 1era función a desarrollar
+"""
+Toma en cuenta la distancia al centro y la altura de la columna, una versión mejoraada de la función
+ordena_centro
+"""
+def ordena_distancias(jugadas, estado, jugador):
+    def puntuacion(col):
+        centro = 3
+        distancia_centro = abs(col - centro)
+        altura = next((i for i in range(5, -1, -1) if estado[col + 7 * i] == 0), -1)
+        return -distancia_centro + altura 
+    return sorted(jugadas, key=puntuacion, reverse=True) 
 
-    
+## 2da función a desarrollar
+"""
+Estudios matemáticos y simulaciones por computadora (como los de Victor Allis en 1988) 
+demuestra que la columna central (columna 3) aumenta las posibilidades de ganar en el Conecta 4 
+Algunas de las razones son:
+- Estadisticamente el primer jugador tiene ventaja
+- En el centro se pueden hacer más combinaciones ganadoras
+- Controlar el centro obliga al rival a bloquear múltiples amenazas
+"""
+def evalua_central(estado):
+    centro = [estado[f * 7 + 3] for f in range(6)]
+    puntaje = centro.count(1) * 3 - centro.count(-1) * 3 
+    return puntaje / 10 
+
+
 if __name__ == '__main__':
 
     modelo = Conecta4()
@@ -170,14 +196,14 @@ if __name__ == '__main__':
             while type(d) != int or d < 1:
                 d = int(input("Profundidad: "))
             jugs.append(lambda juego, s, j: jugador_negamax(
-                juego, s, j, ordena=ordena_centro, evalua=evalua_3con, d=d)
+                juego, s, j, ordena=ordena_distancias, evalua=evalua_central, d=d)
             )
         else:
             t = None
             while type(t) != int or t < 1:
                 t = int(input("Tiempo: "))
             jugs.append(lambda juego, s, j: minimax_iterativo(
-                juego, s, j, ordena=ordena_centro, evalua=evalua_3con, tiempo=t)
+                juego, s, j, ordena=ordena_distancias, evalua=evalua_central, tiempo=t)
             )
         
     g, s_final = juega_dos_jugadores(modelo, jugs[0], jugs[1])
